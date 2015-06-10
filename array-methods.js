@@ -62,7 +62,42 @@ var sumOfBankBalances = dataset.bankBalances.reduce(function(prev, current) {
     Delaware
   the result should be rounded to the nearest cent
  */
-var sumOfInterests = null;
+var sumOfInterests = dataset.bankBalances.filter(function(element) {
+  return element.state === 'WI' ||
+    element.state === 'IL' ||
+    element.state === 'WY' ||
+    element.state === 'OH' ||
+    element.state === 'GA' ||
+    element.state === 'DE'
+}).reduce(function(prev, curr) {
+  return Math.round((prev + curr.amount * .189) * 100) / 100;
+}, 0);
+
+
+/*
+  aggregate the sum of bankBalance amounts
+  grouped by state
+  set stateSums to be a hash table
+    where the key is the two letter state abbreviation
+    and the value is the sum of all amounts from that state
+      the value must be rounded to the nearest cent
+ */
+var stateSums = dataset.bankBalances
+.reduce(function(previousAccount, currentAccount) {
+  //if state key doesn't exist, create it and set the first amount
+  if( !previousAccount.hasOwnProperty(currentAccount.state)) {
+    previousAccount[currentAccount.state] = 0;
+  }
+
+  //by this point, the key exists and is a Number
+  previousAccount[currentAccount.state] += parseFloat(currentAccount.amount);
+  //round down to cents
+  previousAccount[currentAccount.state] = Math.round( previousAccount[currentAccount.state] * 100) / 100;
+
+  return previousAccount;
+}, {});
+
+
 
 /*
   set sumOfHighInterests to the sum of the 18.9% interest
@@ -78,25 +113,38 @@ var sumOfInterests = null;
     Delaware
   the result should be rounded to the nearest cent
  */
-var sumOfHighInterests = null;
-
-/*
-  aggregate the sum of bankBalance amounts
-  grouped by state
-  set stateSums to be a hash table
-    where the key is the two letter state abbreviation
-    and the value is the sum of all amounts from that state
-      the value must be rounded to the nearest cent
- */
-var stateSums = null;
-
+var sumOfHighInterests = Object.keys(stateSums)
+//only accounts in states that are not in the ones listed
+.filter(function(state) {
+  return ['WI', 'IL', 'WY', 'OH', 'GA', 'DE'].indexOf(state) === -1;
+})
+//convert accounts to only interest
+.map(function(stateKey) {
+  return {
+    state : stateKey,
+    interest : Math.round((stateSums[stateKey] * .189) * 100) / 100
+  };
+})
+//returns array of objects
+// ex [{state: 'HI', interest: 1234}....]
+// only use interest amounts greater than 50,000
+.filter(function (account) {
+  return account.interest > 50000;
+})
+//add all the states interest, return rounded to cents
+.reduce(function(previousAccount, currentAccount) {
+  return Math.round((previousAccount + currentAccount.interest) * 100) / 100;
+}, 0);
 /*
   set lowerSumStates to an array containing
   only the two letter state abbreviation of each state
   where the sum of amounts in the state is
     less than 1,000,000
  */
-var lowerSumStates = null;
+var lowerSumStates = Object.keys(stateSums)
+.filter(function(curr) {
+  return stateSums[curr] < 1000000;
+});
 
 /*
   set higherStateSums to be the sum of
@@ -104,7 +152,13 @@ var lowerSumStates = null;
     where the sum of amounts in the state is
       greater than 1,000,000
  */
-var higherStateSums = null;
+var higherStateSums = Object.keys(stateSums)
+.filter(function(curr) {
+  return stateSums[curr] > 1000000;
+})
+.reduce(function(prev, curr) {
+  return prev + stateSums[curr];
+}, 0);
 
 /*
   set areStatesInHigherStateSum to be true if
@@ -118,7 +172,13 @@ var higherStateSums = null;
     Delaware
   false otherwise
  */
-var areStatesInHigherStateSum = null;
+var areStatesInHigherStateSum = Object.keys(stateSums)
+.filter(function(state) {
+  return['WI', 'IL', 'WY', 'OH', 'GA', 'DE'].indexOf(state) !== -1;
+})
+.every(function(curr) {
+  return stateSums[curr] > 2550000;
+});
 
 /*
   set anyStatesInHigherStateSum to be true if
@@ -132,7 +192,13 @@ var areStatesInHigherStateSum = null;
     Delaware
   false otherwise
  */
-var anyStatesInHigherStateSum = null;
+var anyStatesInHigherStateSum = Object.keys(stateSums)
+.filter(function(state) {
+  return['WI', 'IL', 'WY', 'OH', 'GA', 'DE'].indexOf(state) !== -1;
+})
+.some(function(curr) {
+  return stateSums[curr] > 2550000;
+});
 
 
 module.exports = {
