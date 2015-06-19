@@ -25,7 +25,7 @@ var roundedDollar = dataset.bankBalances.map(function(element) {
     'amount' : element.amount,
     'state' : element.state,
     'rounded' : Math.round(element.amount)
-  }
+  };
 });
 
 /*
@@ -38,17 +38,17 @@ var roundedDollar = dataset.bankBalances.map(function(element) {
     }
   assign the resulting array to `roundedDime`
 */
-var roundedDime = dataset.bankBalances.map(function(element){
+var roundedDime = dataset.bankBalances.map(function(element) {
   return {
     'amount' : Math.round(element.amount * 10) / 10,
     'state' : element.state
-  }
+  };
 });
 
 // set sumOfBankBalances to the sum of all amounts in bankBalances
 var sumOfBankBalances = dataset.bankBalances.reduce(function(prev, current) {
   return Math.round(100 * (prev + parseFloat(current.amount))) / 100;
-},0);
+}, 0);
 
 /*
   set sumOfInterests to the sum of the 18.9% interest
@@ -70,7 +70,7 @@ var sumOfInterests = dataset.bankBalances.filter(function(element) {
     element.state === 'GA' ||
     element.state === 'DE'
 }).reduce(function(prev, curr) {
-  return Math.round((prev + curr.amount * .189) * 100) / 100;
+  return Math.round((prev + curr.amount * 0.189) * 100) / 100;
 }, 0);
 
 
@@ -85,12 +85,13 @@ var sumOfInterests = dataset.bankBalances.filter(function(element) {
 var stateSums = dataset.bankBalances
 .reduce(function(previousAccount, currentAccount) {
   //if state key doesn't exist, create it and set the first amount
-  if( !previousAccount.hasOwnProperty(currentAccount.state)) {
+  if (!previousAccount.hasOwnProperty(currentAccount.state)) {
     previousAccount[currentAccount.state] = 0;
   }
 
   //by this point, the key exists and is a Number
   previousAccount[currentAccount.state] += parseFloat(currentAccount.amount);
+
   //round down to cents
   previousAccount[currentAccount.state] = Math.round( previousAccount[currentAccount.state] * 100) / 100;
 
@@ -117,12 +118,12 @@ var sumOfHighInterests = Object.keys(stateSums)
 //only accounts in states that are not in the ones listed
 .filter(function(state) {
   return ['WI', 'IL', 'WY', 'OH', 'GA', 'DE'].indexOf(state) === -1;
-})
+});
 //convert accounts to only interest
 .map(function(stateKey) {
   return {
     state : stateKey,
-    interest : Math.round((stateSums[stateKey] * .189) * 100) / 100
+    interest : Math.round((stateSums[stateKey] * 0.189) * 100) / 100
   };
 })
 //returns array of objects
